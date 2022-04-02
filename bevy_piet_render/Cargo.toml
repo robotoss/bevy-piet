@@ -5,5 +5,5 @@ edition = "2021"
 
 [dependencies]
 bevy = { path = "../../bevy", default-features = false, features = ["bevy_winit"] }
-piet-gpu = { path = "../../../piet-gpu/piet-gpu"}
-piet-gpu-hal = { path = "../../../piet-gpu/piet-gpu-hal"}
+piet-gpu = { path = "../../piet-gpu/piet-gpu"}
+piet-gpu-hal = { path = "../../piet-gpu/piet-gpu-hal"}
