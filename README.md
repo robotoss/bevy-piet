@@ -28,3 +28,6 @@ fn main() {
         .add_plugins(BevyPietPlugins)
         .run();
 ```
+
+# License
+This project is dual-licensed under [Apache 2.0](https://github.com/Seabass247/bevy-piet/blob/main/LICENSE-APACHE) and [MIT](https://github.com/Seabass247/bevy-piet/blob/main/LICENSE-MIT).
