@@ -1,0 +1,10 @@
+[package]
+name = "bevy_piet_core"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bevy_piet_render = { path = "../bevy_piet_render" }
+bevy = { path = "../../bevy", default-features = false, features = ["bevy_winit"] }

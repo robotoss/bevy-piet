@@ -1,0 +1,9 @@
+[package]
+name = "bevy_piet_render"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { path = "../../bevy", default-features = false, features = ["bevy_winit"] }
+piet-gpu = { path = "../../../piet-gpu/piet-gpu"}
+piet-gpu-hal = { path = "../../../piet-gpu/piet-gpu-hal"}
