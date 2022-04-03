@@ -4,10 +4,10 @@ mod render;
 
 use bevy::{
     app::{App, AppLabel, Plugin},
-    ecs::{schedule::RunOnce, event::Events},
+    ecs::{event::Events, schedule::RunOnce},
     prelude::*,
 };
-use render::{setup_piet_renderer, render_frame, prepare_frame};
+use render::{prepare_frame, render_frame, setup_piet_renderer};
 
 /// A Label for the rendering sub-app.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, AppLabel)]
@@ -69,27 +69,22 @@ impl Plugin for PietRenderPlugin {
         let mut render_app = App::empty();
 
         render_app
-        // .init_resource::<Events<RenderFrameEvent>>()
-        .add_stage(
-            PietRenderStage::Setup,
-            SystemStage::parallel()
-                .with_run_criteria(RunOnce::default())
-                // .with_system(setup_piet.exclusive_system().at_start()),
-        )
-        .add_stage(
-            PietRenderStage::Extract,
-            SystemStage::parallel()
-                // .with_system(extract_redraw_events),
-        )
-        .add_stage(
-            PietRenderStage::Prepare,
-            SystemStage::parallel()
-                .with_system(prepare_frame)
-                // .with_system(Events::<RenderFrameEvent>::update_system),
-        )
-        .add_stage(PietRenderStage::Render, SystemStage::single(render_frame))
-        .add_stage(PietRenderStage::Cleanup, SystemStage::parallel());
-        
+            // .init_resource::<Events<RenderFrameEvent>>()
+            .add_stage(
+                PietRenderStage::Setup,
+                SystemStage::parallel().with_run_criteria(RunOnce::default()), // .with_system(setup_piet.exclusive_system().at_start()),
+            )
+            .add_stage(
+                PietRenderStage::Extract,
+                SystemStage::parallel(), // .with_system(extract_redraw_events),
+            )
+            .add_stage(
+                PietRenderStage::Prepare,
+                SystemStage::parallel().with_system(prepare_frame), // .with_system(Events::<RenderFrameEvent>::update_system),
+            )
+            .add_stage(PietRenderStage::Render, SystemStage::single(render_frame))
+            .add_stage(PietRenderStage::Cleanup, SystemStage::parallel());
+
         setup_piet_renderer(&app.world, &mut render_app);
 
         app.add_sub_app(PietRenderApp, render_app, move |app_world, render_app| {
@@ -180,9 +175,7 @@ impl Plugin for PietRenderPlugin {
                 render_app.world.clear_entities();
             }
         });
-
     }
-
 }
 
 /// Executes the [`Extract`](PietRenderStage::Extract) stage of the renderer.
@@ -207,5 +200,3 @@ fn extract(app_world: &mut World, render_app: &mut App) {
 
     extract.apply_buffers(&mut render_app.world);
 }
-
-
