@@ -1,8 +1,13 @@
 use std::cmp::Ordering;
 
-use bevy::{prelude::*, reflect::TypeUuid, asset::HandleId, utils::{HashMap, HashSet}};
-use piet_gpu::{PicoSvg, PietGpuRenderContext};
+use bevy::{
+    asset::HandleId,
+    prelude::*,
+    reflect::TypeUuid,
+    utils::{HashMap, HashSet},
+};
 use bevy_piet_render::RenderWorld;
+use piet_gpu::{PicoSvg, PietGpuRenderContext};
 
 #[derive(Clone, TypeUuid)]
 #[uuid = "6ea26da6-6cf8-4ea2-9986-1d7bf6c17d6f"]
@@ -36,11 +41,9 @@ pub fn extract_vec_img_instances(
         })
     }
 
-    // Copy extracted instances to render world in order to prepare 
+    // Copy extracted instances to render world in order to prepare
     // all vector images extracted during this frame for rendering.
-    render_world.insert_resource(ExtractedVecImgInstances {
-        instances,
-    });
+    render_world.insert_resource(ExtractedVecImgInstances { instances });
 }
 
 /// Stores all render data representations of VectorImageRenderAssets as long as they exist.
@@ -53,13 +56,14 @@ pub fn extract_vec_img_render_assets(
     mut events: EventReader<AssetEvent<VectorImage>>,
     assets: Res<Assets<VectorImage>>,
 ) {
-    let mut vec_image_render_assets = render_world.get_resource_mut::<VectorImageRenderAssets>().unwrap();
+    let mut vec_image_render_assets = render_world
+        .get_resource_mut::<VectorImageRenderAssets>()
+        .unwrap();
 
     let mut new_assets = HashSet::default();
     for event in events.iter() {
         match event {
-            AssetEvent::Created { handle } |
-            AssetEvent::Modified { handle } => {
+            AssetEvent::Created { handle } | AssetEvent::Modified { handle } => {
                 new_assets.insert(handle);
             }
             AssetEvent::Removed { handle } => {
@@ -75,5 +79,3 @@ pub fn extract_vec_img_render_assets(
         }
     }
 }
-
-

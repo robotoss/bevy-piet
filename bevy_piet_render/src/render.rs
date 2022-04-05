@@ -2,8 +2,7 @@ use bevy::prelude::*;
 use piet_gpu::{test_scenes, PietGpuRenderContext, Renderer};
 
 use piet_gpu_hal::{
-    CmdBuf, Error, ImageLayout, Instance, QueryPool, Semaphore, Session, SubmittedCmdBuf,
-    Swapchain,
+    CmdBuf, Error, ImageLayout, Instance, QueryPool, Semaphore, Session, SubmittedCmdBuf, Swapchain,
 };
 
 const NUM_FRAMES: usize = 2;
@@ -45,11 +44,11 @@ pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
             .unwrap()
     };
     let session = Session::new(device);
-    
+
     let query_pools = (0..NUM_FRAMES)
-    .map(|_| session.create_query_pool(8))
-    .collect::<Result<Vec<_>, Error>>()
-    .unwrap();
+        .map(|_| session.create_query_pool(8))
+        .collect::<Result<Vec<_>, Error>>()
+        .unwrap();
     let cmd_bufs: [Option<CmdBuf>; NUM_FRAMES] = Default::default();
     let submitted: [Option<SubmittedCmdBuf>; NUM_FRAMES] = Default::default();
 
@@ -87,7 +86,7 @@ pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
 }
 
 pub fn prepare_frame(ctx: ResMut<PietGpuRenderContext>, frame: Res<RenderFrame>) {
-    let scale = 5.0 * (frame.current_frame as f64 / 200.0).sin();
+    // let scale = 5.0 * (frame.current_frame as f64 / 200.0).sin();
     // test_scenes::render_svg(ctx.into_inner(), "assets/Ghostscript_Tiger.svg", scale);
 }
 

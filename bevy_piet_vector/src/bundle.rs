@@ -1,5 +1,5 @@
-use bevy::prelude::{Bundle, Transform, GlobalTransform, Handle, Component};
 use crate::vector_image::VectorImage;
+use bevy::prelude::{Bundle, Component, GlobalTransform, Handle, Transform};
 
 #[derive(Default, Component, Clone)]
 pub struct VectorImageInstance;

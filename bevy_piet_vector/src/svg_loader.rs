@@ -26,9 +26,7 @@ impl AssetLoader for SvgAssetLoader {
             let xml_str = std::fs::read_to_string(&svg_src_path).unwrap();
             let svg = PicoSvg::load(&xml_str, 1.0).unwrap();
 
-            load_context.set_default_asset(LoadedAsset::new(VectorImage {
-                svg,
-            }));
+            load_context.set_default_asset(LoadedAsset::new(VectorImage { svg }));
 
             Ok(())
         })
