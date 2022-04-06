@@ -7,3 +7,4 @@ edition = "2021"
 bevy = { path = "../../bevy", default-features = false, features = ["bevy_winit"] }
 piet-gpu = { path = "../../piet-gpu/piet-gpu"}
 piet-gpu-hal = { path = "../../piet-gpu/piet-gpu-hal"}
+kurbo = "0.7.1"

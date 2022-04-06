@@ -1,12 +1,41 @@
-use bevy::prelude::*;
-use piet_gpu::{test_scenes, PietGpuRenderContext, Renderer, Blend};
+use std::sync::{Mutex, Arc};
+
+use bevy::{prelude::*, math::Vec3Swizzles};
+use kurbo::{Point, Affine};
+use piet_gpu::{test_scenes, PietGpuRenderContext, Renderer, Blend, PicoSvg, TextAttribute, RenderContext, Text, TextLayoutBuilder};
 
 use piet_gpu_hal::{
     CmdBuf, Error, ImageLayout, Instance, QueryPool, Semaphore, Session, SubmittedCmdBuf, Swapchain,
 };
 
+use crate::math;
+
 const NUM_FRAMES: usize = 2;
 
+pub enum RenderType {
+    Text(String, GlobalTransform),
+    Svg(PicoSvg, GlobalTransform, Vec2),
+}
+
+pub enum RenderLayer {
+    Background,
+    Middle,
+    Foreground,
+}
+
+pub struct RenderCommand {
+    render_type: RenderType,
+    render_layer: RenderLayer,
+}
+
+impl RenderCommand {
+    pub fn new(render_type: RenderType, render_layer: RenderLayer) -> Self {
+        Self {
+            render_type,
+            render_layer,
+        }
+    }
+}
 pub struct RenderFrame {
     pub current_frame: usize,
 }
@@ -85,10 +114,26 @@ pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
     };
 }
 
-pub fn prepare_frame(mut ctx: ResMut<PietGpuRenderContext>, frame: Res<RenderFrame>) {
-    // let scale = 5.0 * (frame.current_frame as f64 / 200.0).sin();
-    // use piet_gpu::{Blend, BlendMode::*, CompositionMode::*};
-    // test_scenes::render_blend_test(&mut ctx, frame.current_frame, Blend::new(Normal, SrcOver));
+/// Prepare the render context by drawing elements to it in the order of their respective render layers
+pub fn prepare_frame(mut ctx: ResMut<PietGpuRenderContext>, mut events: EventReader<RenderCommand>) {
+    let events: Vec<&RenderCommand> = events.iter().collect();
+    for &command in events.iter().filter(|c| matches!(c.render_layer, RenderLayer::Background{..})) {
+        execute_render_command(&mut ctx, command);
+    }
+    for &command in events.iter().filter(|c| matches!(c.render_layer, RenderLayer::Middle{..})) {
+        execute_render_command(&mut ctx, command);
+    }
+    for &command in events.iter().filter(|c| matches!(c.render_layer, RenderLayer::Foreground{..})) {
+        execute_render_command(&mut ctx, command);
+    }
+}
+
+/// Draw an element to the render context according to the render command
+fn execute_render_command(rc: &mut PietGpuRenderContext, command: &RenderCommand) {
+    match &command.render_type {
+        RenderType::Text(text, trans) => render_text(rc, text, *trans),
+        RenderType::Svg(svg, trans, center) => render_svg(svg, rc, *trans, *center),
+    }
 }
 
 pub fn render_frame(
@@ -159,4 +204,41 @@ pub fn render_frame(
             renderer,
         });
     }
+}
+
+pub fn render_svg(
+    svg: &PicoSvg,
+    rc: &mut PietGpuRenderContext,
+    transform: GlobalTransform,
+    center: Vec2,
+) {
+    let trans = kurbo::Vec2::new(
+        transform.translation.x as f64,
+        transform.translation.y as f64,
+    );
+    let rotation_x = transform.rotation.to_euler(EulerRot::XYZ).0;
+
+    rc.save().unwrap();
+    rc.transform(
+        Affine::translate(trans)
+        * math::affine_scale_around(transform.scale.xy(), center)
+        * math::affine_rotate_around(rotation_x, center),
+    );
+    svg.render(rc);
+    rc.restore().unwrap();
+
+}
+
+pub fn render_text(
+    rc: &mut PietGpuRenderContext,
+    text: &str,
+    transform: GlobalTransform,
+) {
+    let layout = rc
+        .text()
+        .new_text_layout(text.to_string())
+        .default_attribute(TextAttribute::FontSize(40.0))
+        .build()
+        .unwrap();
+    rc.draw_text(&layout, Point::new(transform.translation.x.into(), transform.translation.y.into()));
 }

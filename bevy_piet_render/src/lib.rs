@@ -1,6 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 mod render;
+mod math;
 
 use bevy::{
     app::{App, AppLabel, Plugin},
@@ -12,6 +13,8 @@ use render::{prepare_frame, render_frame, setup_piet_renderer};
 /// A Label for the rendering sub-app.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, AppLabel)]
 pub struct PietRenderApp;
+
+pub use render::{ RenderCommand, RenderType, RenderLayer };
 
 /// The Render App World. This is only available as a resource during the Extract step.
 #[derive(Default)]
@@ -64,13 +67,13 @@ pub enum PietRenderStage {
 impl Plugin for PietRenderPlugin {
     /// Initializes the renderer, sets up the [`PietRenderStage`](PietRenderStage) and creates the rendering sub-app.
     fn build(&self, app: &mut App) {
-        app.init_resource::<ScratchRenderWorld>();
-
+        app
+        .init_resource::<ScratchRenderWorld>();
+        
         let mut render_app = App::empty();
 
         render_app
-            // .init_resource::<Events<RenderFrameEvent>>()
-            .add_stage(
+        .add_stage(
                 PietRenderStage::Setup,
                 SystemStage::parallel().with_run_criteria(RunOnce::default()), // .with_system(setup_piet.exclusive_system().at_start()),
             )
@@ -83,9 +86,11 @@ impl Plugin for PietRenderPlugin {
                 SystemStage::parallel().with_system(prepare_frame), // .with_system(Events::<RenderFrameEvent>::update_system),
             )
             .add_stage(PietRenderStage::Render, SystemStage::single(render_frame))
-            .add_stage(PietRenderStage::Cleanup, SystemStage::parallel());
-
-        setup_piet_renderer(&app.world, &mut render_app);
+            .add_stage(PietRenderStage::Cleanup, SystemStage::parallel())
+            .init_resource::<Events<RenderCommand>>()
+            .add_system_to_stage(PietRenderStage::Prepare, Events::<RenderCommand>::update_system);
+            
+            setup_piet_renderer(&app.world, &mut render_app);
 
         app.add_sub_app(PietRenderApp, render_app, move |app_world, render_app| {
             #[cfg(feature = "trace")]
