@@ -1,4 +1,4 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, f64::consts::PI};
 
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -39,10 +39,12 @@ pub fn render_svg(svg: &PicoSvg, rc: &mut PietGpuRenderContext, transform: Globa
         transform.translation.x as f64,
         transform.translation.y as f64,
     );
+    let rotation = transform.rotation.x as f64 * PI * 2.0;
     rc.transform(
         Affine::translate(trans)
-            * Affine::rotate(0.01 as f64)
+            * Affine::rotate(rotation)
             * Affine::scale_non_uniform(transform.scale.x.into(), transform.scale.y.into()),
     );
+    println!("rot={}", rotation);
     svg.render(rc);
 }
