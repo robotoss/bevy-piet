@@ -9,6 +9,8 @@ use bevy::{
 use bevy_piet_render::RenderWorld;
 use piet_gpu::{PicoSvg, PietGpuRenderContext};
 
+use crate::VectorImageInstance;
+
 #[derive(Clone, TypeUuid)]
 #[uuid = "6ea26da6-6cf8-4ea2-9986-1d7bf6c17d6f"]
 pub struct VectorImage {
@@ -20,6 +22,7 @@ pub struct VectorImage {
 pub struct ExtractedVecImgInstance {
     pub transform: GlobalTransform,
     pub vec_image_handle_id: HandleId,
+    pub vec_image_inst: VectorImageInstance,
 }
 
 /// Resource for storing all the vector image instances extracted at the current frame.,
@@ -31,13 +34,18 @@ pub struct ExtractedVecImgInstances {
 /// Extract all vector image instances from the "app world" and copy them to the piet "render world".
 pub fn extract_vec_img_instances(
     mut render_world: ResMut<RenderWorld>,
-    vec_img_inst_query: Query<(&GlobalTransform, &Handle<VectorImage>)>,
+    vec_img_inst_query: Query<(
+        &GlobalTransform,
+        &Handle<VectorImage>,
+        &VectorImageInstance,
+    )>,
 ) {
     let mut instances = Vec::new();
-    for (inst_transform, inst_vec_img) in vec_img_inst_query.iter() {
+    for (transform, handle, vec_image_inst) in vec_img_inst_query.iter() {
         instances.push(ExtractedVecImgInstance {
-            transform: *inst_transform,
-            vec_image_handle_id: inst_vec_img.id,
+            transform: *transform,
+            vec_image_handle_id: handle.id,
+            vec_image_inst: *vec_image_inst,
         })
     }
 
@@ -63,7 +71,8 @@ pub fn extract_vec_img_render_assets(
     let mut new_assets = HashSet::default();
     for event in events.iter() {
         match event {
-            AssetEvent::Created { handle } | AssetEvent::Modified { handle } => {
+            AssetEvent::Created { handle }
+            | AssetEvent::Modified { handle } => {
                 new_assets.insert(handle);
             }
             AssetEvent::Removed { handle } => {

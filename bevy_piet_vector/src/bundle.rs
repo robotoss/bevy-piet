@@ -1,8 +1,10 @@
 use crate::vector_image::VectorImage;
-use bevy::prelude::{Bundle, Component, GlobalTransform, Handle, Transform};
+use bevy::prelude::*;
 
-#[derive(Default, Component, Clone)]
-pub struct VectorImageInstance;
+#[derive(Default, Component, Clone, Copy)]
+pub struct VectorImageInstance {
+    pub center: Vec2,
+}
 
 #[derive(Default, Bundle, Clone)]
 pub struct VecImgInstanceBundle {

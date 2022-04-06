@@ -20,13 +20,16 @@ impl AssetLoader for SvgAssetLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, Result<()>> {
         Box::pin(async move {
-            let mut svg_src_path = load_context.path().to_string_lossy().to_string();
-            svg_src_path = "assets/".to_string() + &svg_src_path.replace("\\", "/");
+            let mut svg_src_path =
+                load_context.path().to_string_lossy().to_string();
+            svg_src_path =
+                "assets/".to_string() + &svg_src_path.replace("\\", "/");
 
             let xml_str = std::fs::read_to_string(&svg_src_path).unwrap();
             let svg = PicoSvg::load(&xml_str, 1.0).unwrap();
 
-            load_context.set_default_asset(LoadedAsset::new(VectorImage { svg }));
+            load_context
+                .set_default_asset(LoadedAsset::new(VectorImage { svg }));
 
             Ok(())
         })
