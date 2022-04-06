@@ -9,3 +9,4 @@ edition = "2021"
 bevy_piet_core = { path = "bevy_piet_core" }
 bevy_piet_render = { path = "bevy_piet_render" }
 bevy_piet_vector = { path = "bevy_piet_vector" }
+bevy_piet_text = { path = "bevy_piet_text" }

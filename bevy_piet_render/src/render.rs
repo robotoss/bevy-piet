@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use piet_gpu::{test_scenes, PietGpuRenderContext, Renderer};
+use piet_gpu::{test_scenes, PietGpuRenderContext, Renderer, Blend};
 
 use piet_gpu_hal::{
     CmdBuf, Error, ImageLayout, Instance, QueryPool, Semaphore, Session, SubmittedCmdBuf, Swapchain,
@@ -85,9 +85,10 @@ pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
     };
 }
 
-pub fn prepare_frame(ctx: ResMut<PietGpuRenderContext>, frame: Res<RenderFrame>) {
+pub fn prepare_frame(mut ctx: ResMut<PietGpuRenderContext>, frame: Res<RenderFrame>) {
     // let scale = 5.0 * (frame.current_frame as f64 / 200.0).sin();
-    // test_scenes::render_svg(ctx.into_inner(), "assets/Ghostscript_Tiger.svg", scale);
+    // use piet_gpu::{Blend, BlendMode::*, CompositionMode::*};
+    // test_scenes::render_blend_test(&mut ctx, frame.current_frame, Blend::new(Normal, SrcOver));
 }
 
 pub fn render_frame(

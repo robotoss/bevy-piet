@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy_piet_render::RenderWorld;
 use kurbo::{Affine, BezPath, Circle, Line, Point, Rect, Shape};
 
-use piet_gpu::{PicoSvg, PietGpuRenderContext, RenderContext};
+use piet_gpu::{PicoSvg, PietGpuRenderContext, RenderContext, Text, TextAttribute, TextLayoutBuilder};
 
 use crate::{
     math,
@@ -58,11 +58,15 @@ pub fn render_svg(
     );
     let rotation_x = transform.rotation.to_euler(EulerRot::XYZ).0;
 
+    rc.save().unwrap();
+    
     rc.transform(
         Affine::translate(trans)
-            * math::affine_scale_around(transform.scale.xy(), center)
-            * math::affine_rotate_around(rotation_x, center),
+        * math::affine_scale_around(transform.scale.xy(), center)
+        * math::affine_rotate_around(rotation_x, center),
     );
-    // println!("rot={}", rotation / PI);
+
     svg.render(rc);
+    rc.restore().unwrap();
+
 }

@@ -1,5 +1,5 @@
 [package]
-name = "bevy_piet_core"
+name = "bevy_piet_text"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,6 +7,8 @@ edition = "2021"
 
 [dependencies]
 bevy_piet_render = { path = "../bevy_piet_render" }
-bevy_piet_vector = { path = "../bevy_piet_vector" }
-bevy_piet_text = { path = "../bevy_piet_text" }
 bevy = { path = "../../bevy", default-features = false, features = ["bevy_winit"] }
+piet-gpu = { path = "../../piet-gpu/piet-gpu" }
+piet-gpu-hal = { path = "../../piet-gpu/piet-gpu-hal" }
+anyhow = "1.0.4"
+kurbo = "0.7.1"
