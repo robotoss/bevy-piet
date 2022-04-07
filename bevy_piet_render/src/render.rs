@@ -1,11 +1,13 @@
-use std::sync::{Mutex, Arc};
-
-use bevy::{prelude::*, math::Vec3Swizzles};
-use kurbo::{Point, Affine};
-use piet_gpu::{test_scenes, PietGpuRenderContext, Renderer, Blend, PicoSvg, TextAttribute, RenderContext, Text, TextLayoutBuilder};
+use bevy::{math::Vec3Swizzles, prelude::*};
+use kurbo::{Affine, Point};
+use piet_gpu::{
+    PicoSvg, PietGpuRenderContext, RenderContext, Renderer,
+    TextLayoutBuilder, TextAttribute, Text,
+};
 
 use piet_gpu_hal::{
-    CmdBuf, Error, ImageLayout, Instance, QueryPool, Semaphore, Session, SubmittedCmdBuf, Swapchain,
+    CmdBuf, Error, ImageLayout, Instance, QueryPool, Semaphore, Session,
+    SubmittedCmdBuf, Swapchain,
 };
 
 use crate::math;
@@ -55,8 +57,9 @@ pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
     let window = windows.get_primary().unwrap();
 
     let raw_window_handle = unsafe { window.raw_window_handle().get_handle() };
-    let (instance, surface) = Instance::new(Some(&raw_window_handle), Default::default())
-        .expect("Error: failed to creat Piet instance");
+    let (instance, surface) =
+        Instance::new(Some(&raw_window_handle), Default::default())
+            .expect("Error: failed to creat Piet instance");
     let device = unsafe {
         instance
             .device(surface.as_ref())
@@ -114,25 +117,43 @@ pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
     };
 }
 
-/// Prepare the render context by drawing elements to it in the order of their respective render layers
-pub fn prepare_frame(mut ctx: ResMut<PietGpuRenderContext>, mut events: EventReader<RenderCommand>) {
+/// Prepare the render context by drawing elements to it in the order of their
+/// respective render layers
+pub fn prepare_frame(
+    mut ctx: ResMut<PietGpuRenderContext>,
+    mut events: EventReader<RenderCommand>,
+) {
     let events: Vec<&RenderCommand> = events.iter().collect();
-    for &command in events.iter().filter(|c| matches!(c.render_layer, RenderLayer::Background{..})) {
+    for &command in events
+        .iter()
+        .filter(|c| matches!(c.render_layer, RenderLayer::Background { .. }))
+    {
         execute_render_command(&mut ctx, command);
     }
-    for &command in events.iter().filter(|c| matches!(c.render_layer, RenderLayer::Middle{..})) {
+    for &command in events
+        .iter()
+        .filter(|c| matches!(c.render_layer, RenderLayer::Middle { .. }))
+    {
         execute_render_command(&mut ctx, command);
     }
-    for &command in events.iter().filter(|c| matches!(c.render_layer, RenderLayer::Foreground{..})) {
+    for &command in events
+        .iter()
+        .filter(|c| matches!(c.render_layer, RenderLayer::Foreground { .. }))
+    {
         execute_render_command(&mut ctx, command);
     }
 }
 
 /// Draw an element to the render context according to the render command
-fn execute_render_command(rc: &mut PietGpuRenderContext, command: &RenderCommand) {
+fn execute_render_command(
+    rc: &mut PietGpuRenderContext,
+    command: &RenderCommand,
+) {
     match &command.render_type {
         RenderType::Text(text, trans) => render_text(rc, text, *trans),
-        RenderType::Svg(svg, trans, center) => render_svg(svg, rc, *trans, *center),
+        RenderType::Svg(svg, trans, center) => {
+            render_svg(svg, rc, *trans, *center)
+        }
     }
 }
 
@@ -156,7 +177,7 @@ pub fn render_frame(
 
         if let Some(submitted) = submitted[frame_idx].take() {
             cmd_bufs[frame_idx] = submitted.wait().unwrap();
-            let ts = session.fetch_query_pool(&query_pools[frame_idx]).unwrap();
+            let _ts = session.fetch_query_pool(&query_pools[frame_idx]).unwrap();
         }
 
         if let Err(e) = renderer.upload_render_ctx(&mut ctx, frame_idx) {
@@ -173,9 +194,17 @@ pub fn render_frame(
         renderer.record(&mut cmd_buf, &query_pools[frame_idx], frame_idx);
 
         // Image -> Swapchain
-        cmd_buf.image_barrier(&swap_image, ImageLayout::Undefined, ImageLayout::BlitDst);
+        cmd_buf.image_barrier(
+            &swap_image,
+            ImageLayout::Undefined,
+            ImageLayout::BlitDst,
+        );
         cmd_buf.blit_image(&renderer.image_dev, &swap_image);
-        cmd_buf.image_barrier(&swap_image, ImageLayout::BlitDst, ImageLayout::Present);
+        cmd_buf.image_barrier(
+            &swap_image,
+            ImageLayout::BlitDst,
+            ImageLayout::Present,
+        );
         cmd_buf.finish();
 
         submitted[frame_idx] = Some(
@@ -221,12 +250,11 @@ pub fn render_svg(
     rc.save().unwrap();
     rc.transform(
         Affine::translate(trans)
-        * math::affine_scale_around(transform.scale.xy(), center)
-        * math::affine_rotate_around(rotation_x, center),
+            * math::affine_scale_around(transform.scale.xy(), center)
+            * math::affine_rotate_around(rotation_x, center),
     );
     svg.render(rc);
     rc.restore().unwrap();
-
 }
 
 pub fn render_text(
@@ -240,5 +268,11 @@ pub fn render_text(
         .default_attribute(TextAttribute::FontSize(40.0))
         .build()
         .unwrap();
-    rc.draw_text(&layout, Point::new(transform.translation.x.into(), transform.translation.y.into()));
+    rc.draw_text(
+        &layout,
+        Point::new(
+            transform.translation.x.into(),
+            transform.translation.y.into(),
+        ),
+    );
 }

@@ -8,7 +8,6 @@ use vector_image::{
 };
 
 mod bundle;
-mod math;
 mod render;
 mod svg_loader;
 mod vector_image;

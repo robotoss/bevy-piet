@@ -1,5 +1,3 @@
-use std::cmp::Ordering;
-
 use bevy::{
     asset::HandleId,
     prelude::*,
@@ -7,7 +5,7 @@ use bevy::{
     utils::{HashMap, HashSet},
 };
 use bevy_piet_render::RenderWorld;
-use piet_gpu::{PicoSvg, PietGpuRenderContext};
+use piet_gpu::PicoSvg;
 
 use crate::VectorImageInstance;
 
@@ -25,13 +23,15 @@ pub struct ExtractedVecImgInstance {
     pub vec_image_inst: VectorImageInstance,
 }
 
-/// Resource for storing all the vector image instances extracted at the current frame.,
+/// Resource for storing all the vector image instances extracted at the current
+/// frame.,
 #[derive(Default)]
 pub struct ExtractedVecImgInstances {
     pub instances: Vec<ExtractedVecImgInstance>,
 }
 
-/// Extract all vector image instances from the "app world" and copy them to the piet "render world".
+/// Extract all vector image instances from the "app world" and copy them to the
+/// piet "render world".
 pub fn extract_vec_img_instances(
     mut render_world: ResMut<RenderWorld>,
     vec_img_inst_query: Query<(
@@ -54,11 +54,12 @@ pub fn extract_vec_img_instances(
     render_world.insert_resource(ExtractedVecImgInstances { instances });
 }
 
-/// Stores all render data representations of VectorImageRenderAssets as long as they exist.
+/// Stores all render data representations of VectorImageRenderAssets as long as
+/// they exist.
 pub type VectorImageRenderAssets = HashMap<Handle<VectorImage>, VectorImage>;
 
-/// This system extracts all crated or modified assets of the corresponding [`VectorImage`] type
-/// into the piet "render world".
+/// This system extracts all crated or modified assets of the corresponding
+/// [`VectorImage`] type into the piet "render world".
 pub fn extract_vec_img_render_assets(
     mut render_world: ResMut<RenderWorld>,
     mut events: EventReader<AssetEvent<VectorImage>>,

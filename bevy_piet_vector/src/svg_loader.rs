@@ -2,9 +2,7 @@ use anyhow::Result;
 
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
-    prelude::*,
-    reflect::TypeUuid,
-    utils::{BoxedFuture, HashSet},
+    utils::BoxedFuture,
 };
 use piet_gpu::PicoSvg;
 

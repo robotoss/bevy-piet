@@ -1,8 +1,5 @@
-
 use bevy::prelude::*;
-use bevy_piet_render::{RenderWorld, RenderCommand, RenderType, RenderLayer};
-
-use piet_gpu::{PicoSvg, PietGpuRenderContext, RenderContext, Text, TextAttribute, TextLayoutBuilder};
+use bevy_piet_render::{RenderCommand, RenderLayer, RenderType, RenderWorld};
 
 use crate::bundle::TextLabel;
 
@@ -25,7 +22,6 @@ pub fn extract_text_labels(
             text: text_label.text.clone(),
             transform: *transform,
         })
-
     }
 
     // Copy extracted instances to render world in order to prepare
@@ -36,12 +32,13 @@ pub fn extract_text_labels(
 pub fn prepare_text_labels(
     extracted_text_labels: ResMut<ExtractedTextLabels>,
     mut render_commands: EventWriter<RenderCommand>,
-    mut ctx: ResMut<PietGpuRenderContext>,
 ) {
     for extracted in extracted_text_labels.text_labels.iter() {
-        let render_command = RenderType::Text(extracted.text.clone(), extracted.transform);
-        render_commands.send(RenderCommand::new(render_command, RenderLayer::Foreground));
-        // render_text(&mut ctx, &text_label.text, text_label.transform.translation.xy());
+        let render_command =
+            RenderType::Text(extracted.text.clone(), extracted.transform);
+        render_commands
+            .send(RenderCommand::new(render_command, RenderLayer::Foreground));
+        // render_text(&mut ctx, &text_label.text,
+        // text_label.transform.translation.xy());
     }
-    
 }

@@ -1,22 +1,20 @@
-use std::{cmp::Ordering, f64::consts::PI};
+use std::cmp::Ordering;
 
 use bevy::prelude::*;
 use bevy_piet_render::{RenderCommand, RenderLayer, RenderType};
 
-use piet_gpu::{PicoSvg, PietGpuRenderContext, RenderContext, Text, TextAttribute, TextLayoutBuilder};
+use piet_gpu::PietGpuRenderContext;
 
-use crate::{
-    math,
-    vector_image::{ExtractedVecImgInstances, VectorImageRenderAssets},
-};
+use crate::vector_image::{ExtractedVecImgInstances, VectorImageRenderAssets};
 
 pub fn prepare_vector_images(
     mut extracted_app_world_vecs: ResMut<ExtractedVecImgInstances>,
     vec_images: Res<VectorImageRenderAssets>,
     mut render_commands: EventWriter<RenderCommand>,
-    mut ctx: ResMut<PietGpuRenderContext>,
+    _ctx: ResMut<PietGpuRenderContext>,
 ) {
-    // Sort images by z for correct transparency and then by handle to improve batching
+    // Sort images by z for correct transparency and then by handle to improve
+    // batching
     extracted_app_world_vecs.instances.sort_unstable_by(|a, b| {
         match a
             .transform
@@ -35,8 +33,13 @@ pub fn prepare_vector_images(
         if let Some(vec_image) =
             vec_images.get(&Handle::weak(extracted.vec_image_handle_id))
         {
-            let render_command = RenderType::Svg(vec_image.svg.clone(),  extracted.transform, extracted.vec_image_inst.center);
-            render_commands.send(RenderCommand::new(render_command, RenderLayer::Middle))
+            let render_command = RenderType::Svg(
+                vec_image.svg.clone(),
+                extracted.transform,
+                extracted.vec_image_inst.center,
+            );
+            render_commands
+                .send(RenderCommand::new(render_command, RenderLayer::Middle))
             // render_svg(
             //     &vec_image.svg,
             //     &mut ctx,
