@@ -245,13 +245,13 @@ pub fn render_svg(
         transform.translation.x as f64,
         transform.translation.y as f64,
     );
-    let rotation_x = transform.rotation.to_euler(EulerRot::XYZ).0;
+    let rotation_z = transform.rotation.to_euler(EulerRot::XYZ).2;
 
     rc.save().unwrap();
     rc.transform(
         Affine::translate(trans)
             * math::affine_scale_around(transform.scale.xy(), center)
-            * math::affine_rotate_around(rotation_x, center),
+            * math::affine_rotate_around(rotation_z, center),
     );
     svg.render(rc);
     rc.restore().unwrap();
