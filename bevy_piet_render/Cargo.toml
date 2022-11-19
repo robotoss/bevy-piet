@@ -7,4 +7,6 @@ edition = "2021"
 bevy = {version ="0.9", default-features = false, features = ["bevy_winit"] }
 piet-gpu = { git = "https://github.com/linebender/piet-gpu.git", rev = "ea6c33b"}
 piet-gpu-hal = { git = "https://github.com/linebender/piet-gpu.git", rev = "ea6c33b"}
+piet-scene = { git = "https://github.com/linebender/piet-gpu.git", rev = "ea6c33b"}
+
 kurbo = "0.8.3"

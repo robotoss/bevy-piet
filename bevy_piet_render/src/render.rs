@@ -1,20 +1,21 @@
-use bevy::{math::Vec3Swizzles, prelude::*};
-use kurbo::{Affine, Point};
-use piet_gpu::{
-    PicoSvg, PietGpuRenderContext, RenderContext, Renderer, Text, TextAttribute, TextLayoutBuilder,
-};
+use bevy::prelude::*;
+use piet_gpu::{Renderer, SimpleText};
+use piet_scene::{Scene, SceneBuilder};
 
 use piet_gpu_hal::{
     CmdBuf, Error, ImageLayout, Instance, QueryPool, Semaphore, Session, SubmittedCmdBuf, Swapchain,
 };
-
-use crate::math;
 
 const NUM_FRAMES: usize = 2;
 
 pub enum RenderType {
     Text(String, GlobalTransform),
     // Svg(PicoSvg, GlobalTransform, Vec2),
+}
+
+#[derive(Resource)]
+pub struct PietRenderResources {
+    pub scene: Scene,
 }
 
 pub enum RenderLayer {
@@ -36,6 +37,7 @@ impl RenderCommand {
         }
     }
 }
+#[derive(Resource)]
 pub struct RenderFrame {
     pub current_frame: usize,
 }
@@ -52,14 +54,18 @@ pub struct RenderResources {
 
 pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
     let windows = app_world.get_resource::<Windows>().unwrap();
-    let window = windows.get_primary().unwrap();
+    let window = windows.get_primary().expect("Can't find window");
 
-    let raw_window_handle = unsafe { window.raw_window_handle().get_handle() };
-    let (instance, surface) = Instance::new(Some(&raw_window_handle), Default::default())
-        .expect("Error: failed to creat Piet instance");
+    let raw_handle = unsafe { window.raw_handle().unwrap() };
+    let instance = Instance::new(Default::default()).expect("Error: failed to creat Piet instance");
+    let surface = unsafe {
+        instance
+            .surface(raw_handle.display_handle, raw_handle.window_handle)
+            .unwrap()
+    };
     let device = unsafe {
         instance
-            .device(surface.as_ref())
+            .device()
             .expect("Error: Piet device creation failure")
     };
     let swapchain = unsafe {
@@ -68,7 +74,7 @@ pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
                 window.physical_width() as usize / 2,
                 window.physical_height() as usize / 2,
                 &device,
-                surface.as_ref().unwrap(),
+                &surface,
             )
             .unwrap()
     };
@@ -97,7 +103,9 @@ pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
 
         render_app.insert_resource(RenderFrame { current_frame: 0 });
 
-        render_app.insert_resource(PietGpuRenderContext::new());
+        render_app.insert_resource(PietRenderResources {
+            scene: Scene::default(),
+        });
 
         render_app.insert_non_send_resource(Some(RenderResources {
             present_semaphores,
@@ -117,34 +125,36 @@ pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
 /// Prepare the render context by drawing elements to it in the order of their
 /// respective render layers
 pub fn prepare_frame(
-    mut ctx: ResMut<PietGpuRenderContext>,
+    mut piet_render_res: ResMut<PietRenderResources>,
     mut events: EventReader<RenderCommand>,
 ) {
     let events: Vec<&RenderCommand> = events.iter().collect();
+    let mut builder = SceneBuilder::for_scene(&mut piet_render_res.scene);
+
     for &command in events
         .iter()
         .filter(|c| matches!(c.render_layer, RenderLayer::Background { .. }))
     {
-        execute_render_command(&mut ctx, command);
+        execute_render_command(&mut builder, command);
     }
     for &command in events
         .iter()
         .filter(|c| matches!(c.render_layer, RenderLayer::Middle { .. }))
     {
-        execute_render_command(&mut ctx, command);
+        execute_render_command(&mut builder, command);
     }
     for &command in events
         .iter()
         .filter(|c| matches!(c.render_layer, RenderLayer::Foreground { .. }))
     {
-        execute_render_command(&mut ctx, command);
+        execute_render_command(&mut builder, command);
     }
 }
 
 /// Draw an element to the render context according to the render command
-fn execute_render_command(rc: &mut PietGpuRenderContext, command: &RenderCommand) {
+fn execute_render_command(sb: &mut SceneBuilder, command: &RenderCommand) {
     match &command.render_type {
-        RenderType::Text(text, trans) => render_text(rc, text, *trans),
+        RenderType::Text(text, trans) => render_text(sb, text),
         // RenderType::Svg(svg, trans, center) => render_svg(svg, rc, *trans, *center),
     }
 }
@@ -152,7 +162,7 @@ fn execute_render_command(rc: &mut PietGpuRenderContext, command: &RenderCommand
 pub fn render_frame(
     mut renderer_res: NonSendMut<Option<RenderResources>>,
     mut frame: ResMut<RenderFrame>,
-    mut ctx: ResMut<PietGpuRenderContext>,
+    mut piet_render_res: ResMut<PietRenderResources>,
 ) {
     unsafe {
         let RenderResources {
@@ -172,10 +182,12 @@ pub fn render_frame(
             let _ts = session.fetch_query_pool(&query_pools[frame_idx]).unwrap();
         }
 
-        if let Err(e) = renderer.upload_render_ctx(&mut ctx, frame_idx) {
+        if let Err(e) = renderer.upload_scene(&piet_render_res.scene, frame_idx) {
             println!("error in uploading: {}", e);
         }
-        *ctx = PietGpuRenderContext::new();
+        *piet_render_res = PietRenderResources {
+            scene: Scene::default(),
+        };
 
         let (image_idx, acquisition_semaphore) = swapchain.next().unwrap();
         let swap_image = swapchain.image(image_idx);
@@ -241,18 +253,15 @@ pub fn render_frame(
 //     rc.restore().unwrap();
 // }
 
-pub fn render_text(rc: &mut PietGpuRenderContext, text: &str, transform: GlobalTransform) {
-    let layout = rc
-        .text()
-        .new_text_layout(text.to_string())
-        .default_attribute(TextAttribute::FontSize(40.0))
-        .build()
-        .unwrap();
-    rc.draw_text(
-        &layout,
-        Point::new(
-            transform.translation.x.into(),
-            transform.translation.y.into(),
-        ),
+pub fn render_text(sb: &mut SceneBuilder, text: &str) {
+    let mut simple_text = piet_gpu::SimpleText::new();
+
+    simple_text.add(
+        sb,
+        None,
+        60.0,
+        None,
+        piet_scene::Affine::translate(110.0, 120.0),
+        text,
     );
 }
