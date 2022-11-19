@@ -111,7 +111,7 @@ impl Plugin for PietRenderPlugin {
 
                 // reserve all existing app entities for use in render_app
                 // they can only be spawned using `get_or_spawn()`
-                let meta_len = app_world.entities().meta.len();
+                let meta_len = app_world.entities().meta_len();
                 render_app
                     .world
                     .entities()
@@ -129,7 +129,7 @@ impl Plugin for PietRenderPlugin {
             {
                 let setup = render_app
                     .schedule
-                    .get_stage_mut::<SystemStage>(&PietRenderStage::Setup)
+                    .get_stage_mut::<SystemStage>(PietRenderStage::Setup)
                     .unwrap();
                 setup.run(&mut render_app.world);
             }
@@ -153,7 +153,7 @@ impl Plugin for PietRenderPlugin {
                 // prepare
                 let prepare = render_app
                     .schedule
-                    .get_stage_mut::<SystemStage>(&PietRenderStage::Prepare)
+                    .get_stage_mut::<SystemStage>(PietRenderStage::Prepare)
                     .unwrap();
                 prepare.run(&mut render_app.world);
             }
@@ -167,7 +167,7 @@ impl Plugin for PietRenderPlugin {
                 // render
                 let render = render_app
                     .schedule
-                    .get_stage_mut::<SystemStage>(&PietRenderStage::Render)
+                    .get_stage_mut::<SystemStage>(PietRenderStage::Render)
                     .unwrap();
                 render.run(&mut render_app.world);
             }
@@ -181,7 +181,7 @@ impl Plugin for PietRenderPlugin {
                 // cleanup
                 let cleanup = render_app
                     .schedule
-                    .get_stage_mut::<SystemStage>(&PietRenderStage::Cleanup)
+                    .get_stage_mut::<SystemStage>(PietRenderStage::Cleanup)
                     .unwrap();
                 cleanup.run(&mut render_app.world);
 
@@ -197,7 +197,7 @@ impl Plugin for PietRenderPlugin {
 fn extract(app_world: &mut World, render_app: &mut App) {
     let extract = render_app
         .schedule
-        .get_stage_mut::<SystemStage>(&PietRenderStage::Extract)
+        .get_stage_mut::<SystemStage>(PietRenderStage::Extract)
         .unwrap();
 
     // temporarily add the render world to the app world as a resource
