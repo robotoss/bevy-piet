@@ -117,13 +117,12 @@ impl Plugin for PietRenderPlugin {
                     .entities()
                     .reserve_entities(meta_len as u32);
 
-                // flushing as "invalid" ensures that app world entities
-                // aren't added as "empty archetype" entities by default
-                // these entities cannot be accessed without spawning
-                // directly onto them this _only_ works
-                // as expected because clear_entities() is called at the end
-                // of every frame.
-                render_app.world.entities_mut().flush_as_invalid();
+                // This is safe given the clear_entities call in the past frame and the assert above
+                unsafe {
+                    render_app
+                        .world
+                        .entities_mut()
+                        .flush_and_reserve_invalid_assuming_no_entities(meta_len);
             }
 
             {
