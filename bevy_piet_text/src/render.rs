@@ -8,6 +8,7 @@ pub struct ExtractedTextLabel {
     transform: GlobalTransform,
 }
 
+#[derive(Resource)]
 pub struct ExtractedTextLabels {
     text_labels: Vec<ExtractedTextLabel>,
 }
@@ -34,10 +35,8 @@ pub fn prepare_text_labels(
     mut render_commands: EventWriter<RenderCommand>,
 ) {
     for extracted in extracted_text_labels.text_labels.iter() {
-        let render_command =
-            RenderType::Text(extracted.text.clone(), extracted.transform);
-        render_commands
-            .send(RenderCommand::new(render_command, RenderLayer::Foreground));
+        let render_command = RenderType::Text(extracted.text.clone(), extracted.transform);
+        render_commands.send(RenderCommand::new(render_command, RenderLayer::Foreground));
         // render_text(&mut ctx, &text_label.text,
         // text_label.transform.translation.xy());
     }
