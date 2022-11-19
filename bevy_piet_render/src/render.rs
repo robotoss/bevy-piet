@@ -1,13 +1,11 @@
 use bevy::{math::Vec3Swizzles, prelude::*};
 use kurbo::{Affine, Point};
 use piet_gpu::{
-    PicoSvg, PietGpuRenderContext, RenderContext, Renderer,
-    TextLayoutBuilder, TextAttribute, Text,
+    PicoSvg, PietGpuRenderContext, RenderContext, Renderer, Text, TextAttribute, TextLayoutBuilder,
 };
 
 use piet_gpu_hal::{
-    CmdBuf, Error, ImageLayout, Instance, QueryPool, Semaphore, Session,
-    SubmittedCmdBuf, Swapchain,
+    CmdBuf, Error, ImageLayout, Instance, QueryPool, Semaphore, Session, SubmittedCmdBuf, Swapchain,
 };
 
 use crate::math;
@@ -16,7 +14,7 @@ const NUM_FRAMES: usize = 2;
 
 pub enum RenderType {
     Text(String, GlobalTransform),
-    Svg(PicoSvg, GlobalTransform, Vec2),
+    // Svg(PicoSvg, GlobalTransform, Vec2),
 }
 
 pub enum RenderLayer {
@@ -57,9 +55,8 @@ pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
     let window = windows.get_primary().unwrap();
 
     let raw_window_handle = unsafe { window.raw_window_handle().get_handle() };
-    let (instance, surface) =
-        Instance::new(Some(&raw_window_handle), Default::default())
-            .expect("Error: failed to creat Piet instance");
+    let (instance, surface) = Instance::new(Some(&raw_window_handle), Default::default())
+        .expect("Error: failed to creat Piet instance");
     let device = unsafe {
         instance
             .device(surface.as_ref())
@@ -145,15 +142,10 @@ pub fn prepare_frame(
 }
 
 /// Draw an element to the render context according to the render command
-fn execute_render_command(
-    rc: &mut PietGpuRenderContext,
-    command: &RenderCommand,
-) {
+fn execute_render_command(rc: &mut PietGpuRenderContext, command: &RenderCommand) {
     match &command.render_type {
         RenderType::Text(text, trans) => render_text(rc, text, *trans),
-        RenderType::Svg(svg, trans, center) => {
-            render_svg(svg, rc, *trans, *center)
-        }
+        // RenderType::Svg(svg, trans, center) => render_svg(svg, rc, *trans, *center),
     }
 }
 
@@ -194,17 +186,9 @@ pub fn render_frame(
         renderer.record(&mut cmd_buf, &query_pools[frame_idx], frame_idx);
 
         // Image -> Swapchain
-        cmd_buf.image_barrier(
-            &swap_image,
-            ImageLayout::Undefined,
-            ImageLayout::BlitDst,
-        );
+        cmd_buf.image_barrier(&swap_image, ImageLayout::Undefined, ImageLayout::BlitDst);
         cmd_buf.blit_image(&renderer.image_dev, &swap_image);
-        cmd_buf.image_barrier(
-            &swap_image,
-            ImageLayout::BlitDst,
-            ImageLayout::Present,
-        );
+        cmd_buf.image_barrier(&swap_image, ImageLayout::BlitDst, ImageLayout::Present);
         cmd_buf.finish();
 
         submitted[frame_idx] = Some(
@@ -235,33 +219,29 @@ pub fn render_frame(
     }
 }
 
-pub fn render_svg(
-    svg: &PicoSvg,
-    rc: &mut PietGpuRenderContext,
-    transform: GlobalTransform,
-    center: Vec2,
-) {
-    let trans = kurbo::Vec2::new(
-        transform.translation.x as f64,
-        transform.translation.y as f64,
-    );
-    let rotation_z = transform.rotation.to_euler(EulerRot::XYZ).2;
+// pub fn render_svg(
+//     svg: &PicoSvg,
+//     rc: &mut PietGpuRenderContext,
+//     transform: GlobalTransform,
+//     center: Vec2,
+// ) {
+//     let trans = kurbo::Vec2::new(
+//         transform.translation.x as f64,
+//         transform.translation.y as f64,
+//     );
+//     let rotation_z = transform.rotation.to_euler(EulerRot::XYZ).2;
 
-    rc.save().unwrap();
-    rc.transform(
-        Affine::translate(trans)
-            * math::affine_scale_around(transform.scale.xy(), center)
-            * math::affine_rotate_around(rotation_z, center),
-    );
-    svg.render(rc);
-    rc.restore().unwrap();
-}
+//     rc.save().unwrap();
+//     rc.transform(
+//         Affine::translate(trans)
+//             * math::affine_scale_around(transform.scale.xy(), center)
+//             * math::affine_rotate_around(rotation_z, center),
+//     );
+//     svg.render(rc);
+//     rc.restore().unwrap();
+// }
 
-pub fn render_text(
-    rc: &mut PietGpuRenderContext,
-    text: &str,
-    transform: GlobalTransform,
-) {
+pub fn render_text(rc: &mut PietGpuRenderContext, text: &str, transform: GlobalTransform) {
     let layout = rc
         .text()
         .new_text_layout(text.to_string())

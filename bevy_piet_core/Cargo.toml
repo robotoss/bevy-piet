@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 bevy_piet_render = { path = "../bevy_piet_render" }
-bevy_piet_vector = { path = "../bevy_piet_vector" }
+# bevy_piet_vector = { path = "../bevy_piet_vector" }
 bevy_piet_text = { path = "../bevy_piet_text" }
 bevy = {version ="0.9",  default-features = false, features = ["bevy_winit"] }
