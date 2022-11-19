@@ -123,6 +123,7 @@ impl Plugin for PietRenderPlugin {
                         .world
                         .entities_mut()
                         .flush_and_reserve_invalid_assuming_no_entities(meta_len);
+                }
             }
 
             {
