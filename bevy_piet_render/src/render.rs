@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use piet_gpu::{Renderer, SimpleText};
+use piet_gpu::Renderer;
 use piet_scene::{Scene, SceneBuilder};
 
 use piet_gpu_hal::{
@@ -56,7 +56,7 @@ pub fn setup_piet_renderer(app_world: &World, render_app: &mut App) {
     let windows = app_world.get_resource::<Windows>().unwrap();
     let window = windows.get_primary().expect("Can't find window");
 
-    let raw_handle = unsafe { window.raw_handle().unwrap() };
+    let raw_handle = window.raw_handle().unwrap();
     let instance = Instance::new(Default::default()).expect("Error: failed to creat Piet instance");
     let surface = unsafe {
         instance
@@ -154,7 +154,7 @@ pub fn prepare_frame(
 /// Draw an element to the render context according to the render command
 fn execute_render_command(sb: &mut SceneBuilder, command: &RenderCommand) {
     match &command.render_type {
-        RenderType::Text(text, trans) => render_text(sb, text),
+        RenderType::Text(text, transform) => render_text(sb, text, transform),
         // RenderType::Svg(svg, trans, center) => render_svg(svg, rc, *trans, *center),
     }
 }
@@ -253,7 +253,8 @@ pub fn render_frame(
 //     rc.restore().unwrap();
 // }
 
-pub fn render_text(sb: &mut SceneBuilder, text: &str) {
+pub fn render_text(sb: &mut SceneBuilder, text: &str, transform: &GlobalTransform) {
+    println!("Transform data {:?}", transform);
     let mut simple_text = piet_gpu::SimpleText::new();
 
     simple_text.add(
