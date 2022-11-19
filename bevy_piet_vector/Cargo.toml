@@ -7,8 +7,8 @@ edition = "2021"
 
 [dependencies]
 bevy_piet_render = { path = "../bevy_piet_render" }
-bevy = { path = "../../bevy", default-features = false, features = ["bevy_winit"] }
-piet-gpu = { path = "../../piet-gpu/piet-gpu"}
-piet-gpu-hal = { path = "../../piet-gpu/piet-gpu-hal"}
+bevy = {version ="0.9", default-features = false, features = ["bevy_winit"] }
+piet-gpu = { git = "https://github.com/linebender/piet-gpu.git", rev = "ea6c33b"}
+piet-gpu-hal = { git = "https://github.com/linebender/piet-gpu.git", rev = "ea6c33b"}
 anyhow = "1.0.4"
-kurbo = "0.7.1"
+kurbo = "0.8.3"

@@ -9,4 +9,4 @@ edition = "2021"
 bevy_piet_render = { path = "../bevy_piet_render" }
 bevy_piet_vector = { path = "../bevy_piet_vector" }
 bevy_piet_text = { path = "../bevy_piet_text" }
-bevy = { path = "../../bevy", default-features = false, features = ["bevy_winit"] }
+bevy = {version ="0.9",  default-features = false, features = ["bevy_winit"] }
