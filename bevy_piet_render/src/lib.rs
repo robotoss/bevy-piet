@@ -18,7 +18,7 @@ pub use render::{RenderCommand, RenderLayer, RenderType};
 
 /// The Render App World. This is only available as a resource during the
 /// Extract step.
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct RenderWorld(World);
 
 impl Deref for RenderWorld {
@@ -37,7 +37,7 @@ impl DerefMut for RenderWorld {
 
 /// A "scratch" world used to avoid allocating new worlds every frame when
 /// swapping out the [`RenderWorld`].
-#[derive(Default)]
+#[derive(Default, Resource)]
 struct ScratchRenderWorld(World);
 
 /// Contains the Bevy interface to the Piet renderer.
