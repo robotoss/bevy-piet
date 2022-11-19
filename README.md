@@ -14,7 +14,7 @@ Add plugin to your bevy project (`default features = false` to disable bevy's de
 ```
 [dependencies]
 bevy-piet = { path = "bevy-piet" }
-bevy = {version ="0.9", path = "bevy", default-features = false }
+bevy = {version ="0.9", default-features = false }
 ```
 
 Put in `main()`:

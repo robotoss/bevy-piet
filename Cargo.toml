@@ -12,7 +12,7 @@ bevy_piet_render = { path = "bevy_piet_render" }
 bevy_piet_text = { path = "bevy_piet_text" }
 
 [dev-dependencies]
-bevy = "0.9"
+bevy = {version ="0.9", default-features = false }
 
 [[example]]
 name = "text2d"

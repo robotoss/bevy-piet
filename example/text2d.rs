@@ -1,44 +1,31 @@
 //! Shows how to render simple primitive shapes with a single color.
 
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::prelude::*;
+use bevy_piet::BevyPietPlugins;
+use bevy_piet_text::{TextLabel, TextLabelBundle};
+
+#[derive(Component)]
+struct Text;
+
+#[derive(Component)]
+struct Node(i32);
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(BevyPietPlugins)
         .add_startup_system(setup)
         .run();
 }
 
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    commands.spawn(Camera2dBundle::default());
-
-    // Rectangle
-    commands.spawn(SpriteBundle {
-        sprite: Sprite {
-            color: Color::rgb(0.25, 0.25, 0.75),
-            custom_size: Some(Vec2::new(50.0, 100.0)),
+fn setup(mut command: Commands) {
+    command
+        .spawn(TextLabelBundle {
+            text_label: TextLabel {
+                text: "Hello world".to_string(),
+            },
+            transform: Transform::from_xyz(125.0, 160.0, 0.0).with_scale(Vec3::new(2.0, 2.0, 2.0)),
             ..default()
-        },
-        ..default()
-    });
-
-    // Circle
-    commands.spawn(MaterialMesh2dBundle {
-        mesh: meshes.add(shape::Circle::new(50.).into()).into(),
-        material: materials.add(ColorMaterial::from(Color::PURPLE)),
-        transform: Transform::from_translation(Vec3::new(-100., 0., 0.)),
-        ..default()
-    });
-
-    // Hexagon
-    commands.spawn(MaterialMesh2dBundle {
-        mesh: meshes.add(shape::RegularPolygon::new(50., 6).into()).into(),
-        material: materials.add(ColorMaterial::from(Color::TURQUOISE)),
-        transform: Transform::from_translation(Vec3::new(100., 0., 0.)),
-        ..default()
-    });
+        })
+        .insert(Node(-5));
 }
