@@ -7,9 +7,10 @@ use bevy_piet_text::PietTextPlugin;
 pub struct BevyPietPlugins;
 
 impl PluginGroup for BevyPietPlugins {
-    fn build(&mut self, group: &mut PluginGroupBuilder) {
-        group.add(PietRenderPlugin::default());
-        // group.add(PietVectorPlugin::default());
-        group.add(PietTextPlugin::default());
+    fn build(self) -> PluginGroupBuilder {
+        PluginGroupBuilder::start::<Self>()
+            .add(PietRenderPlugin::default())
+            .add(PietTextPlugin::default())
+        // .add(PietVectorPlugin::default())
     }
 }
